@@ -23,7 +23,7 @@
   {
    "fieldname": "proficinecy",
    "fieldtype": "Rating",
-   "label": "Proficinecy"
+   "label": "Proficiency"
   }
  ],
  "index_web_pages_for_search": 1,
