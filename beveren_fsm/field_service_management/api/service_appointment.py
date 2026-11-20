@@ -8,6 +8,51 @@ import json
 import frappe
 from frappe.utils import getdate
 
+from beveren_fsm.field_service_management.api.geocoding import parse_geolocation_value
+
+
+
+def _resolve_appointment_location(service_order_name):
+	"""Resolve an appointment's map location from its Service Order.
+
+	Prefers the Service Order's own Location (Geolocation) field, then falls
+	back to the linked Service Area's location. Returns
+	(location_data, service_area_name); location_data is
+	{"lat": .., "lng": .., "service_area": ..} or None.
+	"""
+	location_data = None
+	service_area_name = None
+	try:
+		service_order = frappe.get_doc("Service Order", service_order_name)
+	except Exception:
+		return None, None
+
+	# 1) The order's own Location field (Geolocation)
+	try:
+		coords = parse_geolocation_value(getattr(service_order, "location", None))
+	except Exception:
+		coords = None
+
+	if service_order.service_area:
+		service_area_name = service_order.service_area
+
+	# 2) Fall back to the Service Area's location
+	if not coords and service_area_name:
+		try:
+			service_area_doc = frappe.get_doc("Service Area", service_area_name)
+			coords = parse_geolocation_value(getattr(service_area_doc, "location", None))
+		except Exception:
+			coords = None
+
+	if coords:
+		location_data = {
+			"lat": coords[0],
+			"lng": coords[1],
+			"service_area": service_area_name,
+		}
+
+	return location_data, service_area_name
+
 
 @frappe.whitelist()
 def get_appointments(
@@ -95,39 +140,13 @@ def get_appointments(
 			for item in appointment_doc.items
 		]
 
-		# Fetch location from Service Order -> Service Area
+		# Fetch location from the Service Order (own Location, else Service Area)
 		location_data = None
 		service_area_name = None
 		if appointment_data.get("service_order"):
-			try:
-				service_order = frappe.get_doc("Service Order", appointment_data["service_order"])
-				if service_order.service_area:
-					service_area_name = service_order.service_area
-					try:
-						service_area_doc = frappe.get_doc("Service Area", service_area_name)
-						if hasattr(service_area_doc, "location") and service_area_doc.location:
-							# Parse location if it's a JSON string, otherwise use as-is
-							loc = service_area_doc.location
-							if isinstance(loc, str):
-								try:
-									loc = json.loads(loc)
-								except (json.JSONDecodeError, TypeError):
-									pass
-
-							# Ensure we have lat/lng structure
-							if isinstance(loc, dict) and "lat" in loc and "lng" in loc:
-								location_data = {
-									"lat": float(loc["lat"]),
-									"lng": float(loc["lng"]),
-									"service_area": service_area_name,
-								}
-					except Exception:
-						# Silently skip if Service Area doesn't exist or has issues
-						pass
-			except Exception:
-				# Silently skip if Service Order doesn't exist or has issues
-				pass
-
+			location_data, service_area_name = _resolve_appointment_location(
+				appointment_data["service_order"]
+			)
 		if location_data:
 			appointment_data["location"] = location_data
 		elif service_area_name:
@@ -183,39 +202,13 @@ def get_appointment(name):
 		for item in appointment_doc.items
 	]
 
-	# Fetch location from Service Order -> Service Area
+	# Fetch location from the Service Order (own Location, else Service Area)
 	location_data = None
 	service_area_name = None
 	if appointment_data.get("service_order"):
-		try:
-			service_order = frappe.get_doc("Service Order", appointment_data["service_order"])
-			if service_order.service_area:
-				service_area_name = service_order.service_area
-				try:
-					service_area_doc = frappe.get_doc("Service Area", service_area_name)
-					if hasattr(service_area_doc, "location") and service_area_doc.location:
-						# Parse location if it's a JSON string, otherwise use as-is
-						loc = service_area_doc.location
-						if isinstance(loc, str):
-							try:
-								loc = json.loads(loc)
-							except (json.JSONDecodeError, TypeError):
-								pass
-
-						# Ensure we have lat/lng structure
-						if isinstance(loc, dict) and "lat" in loc and "lng" in loc:
-							location_data = {
-								"lat": float(loc["lat"]),
-								"lng": float(loc["lng"]),
-								"service_area": service_area_name,
-							}
-				except Exception:
-					# Silently skip if Service Area doesn't exist or has issues
-					pass
-		except Exception:
-			# Silently skip if Service Order doesn't exist or has issues
-			pass
-
+		location_data, service_area_name = _resolve_appointment_location(
+			appointment_data["service_order"]
+		)
 	if location_data:
 		appointment_data["location"] = location_data
 	elif service_area_name:

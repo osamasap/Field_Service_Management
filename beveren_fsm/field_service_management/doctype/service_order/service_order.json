@@ -15,6 +15,8 @@
   "type",
   "customer",
   "service_area",
+  "location",
+  "location_link",
   "column_break_llgp",
   "posting_date",
   "due_date",
@@ -930,6 +932,17 @@
    "options": "Currency",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Geolocation",
+   "label": "Location"
+  },
+  {
+   "description": "Paste a Google Maps link or lat,lng - saved to Location on save",
+   "fieldname": "location_link",
+   "fieldtype": "Data",
+   "label": "Location link"
   }
  ],
  "index_web_pages_for_search": 1,

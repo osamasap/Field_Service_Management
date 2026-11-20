@@ -1,4 +1,4 @@
-import { Appointment, ServiceOrderDetail } from "../pages/schedule/types";
+import { Appointment, OpenServiceOrder, ServiceOrderDetail } from "../pages/schedule/types";
 
 export async function fetchAppointmentsWithFilter(
   startDate: Date | null,
@@ -54,6 +54,47 @@ export async function fetchAppointmentsWithFilter(
     return mapped;
   } catch (error) {
     console.error("Error fetching appointments:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch Service Orders for the schedule map, filtered by posting date range
+ * and status group. "Open" means status not Completed/Cancelled; "Completed"
+ * means status == Completed. Returns only orders that resolve to coordinates
+ * (own Location field, else their Service Area's location).
+ */
+export async function fetchServiceOrdersForMap(
+  fromDate: string,
+  toDate: string,
+  includeOpen: boolean,
+  includeCompleted: boolean
+): Promise<OpenServiceOrder[]> {
+  try {
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const csrfToken = (window as any).csrf_token;
+    const params = new URLSearchParams({
+      from_date: fromDate,
+      to_date: toDate,
+      include_open: includeOpen ? "1" : "0",
+      include_completed: includeCompleted ? "1" : "0",
+    });
+    const url = `/api/method/beveren_fsm.field_service_management.api.service_order.get_service_orders_for_map?${params.toString()}`;
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Frappe-CSRF-Token": csrfToken,
+      },
+      credentials: "include",
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch service orders: ${response.statusText}`);
+    }
+    const result = await response.json();
+    return result.message || [];
+  } catch (error) {
+    console.error("Error fetching service orders for map:", error);
     throw error;
   }
 }

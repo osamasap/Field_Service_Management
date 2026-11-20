@@ -20,6 +20,20 @@ export interface Appointment {
   service_area?: string;
 }
 
+export interface OpenServiceOrder {
+  name: string;
+  customer?: string;
+  status: string;
+  service_area?: string;
+  product_location?: string;
+  posting_date?: string;
+  location: {
+    lat: number;
+    lng: number;
+    service_area?: string;
+  };
+}
+
 export interface Technician {
   name: string;
   full_name: string;
