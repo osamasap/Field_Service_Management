@@ -272,7 +272,7 @@ scheduler_events = {
 
 # Request Events
 # ----------------
-# before_request = ["beveren_fsm.utils.before_request"]
+before_request = ["beveren_fsm.extend_pricing_allowlist"]
 # after_request = ["beveren_fsm.utils.after_request"]
 
 # Job Events
