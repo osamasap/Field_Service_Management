@@ -3,11 +3,11 @@
 
 import frappe
 from frappe import _
-from frappe.model.document import Document
+from erpnext.controllers.selling_controller import SellingController
 from frappe.model.mapper import get_mapped_doc
 
 
-class ServiceQuotation(Document):
+class ServiceQuotation(SellingController):
 	def validate(self):
 		self.validate_items()
 

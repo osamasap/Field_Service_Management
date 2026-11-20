@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.model.document import Document
+from erpnext.controllers.selling_controller import SellingController
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate, today
 
@@ -32,7 +32,7 @@ def _set_status_from_location(order, location):
 	return False
 
 
-class ServiceOrder(Document):
+class ServiceOrder(SellingController):
 	def validate(self):
 		self.ensure_default_product_location()
 		self.set_in_words()
@@ -136,9 +136,9 @@ class ServiceOrder(Document):
 	def set_in_words(self):
 		from frappe.utils import money_in_words
 
-		self.in_words = money_in_words(self.grand_total, self.currency)
+		self.in_words = money_in_words(self.grand_total or 0, self.currency)
 		self.base_in_words = money_in_words(
-			self.base_grand_total, frappe.get_cached_value("Company", self.company, "default_currency")
+			self.base_grand_total or 0, frappe.get_cached_value("Company", self.company, "default_currency")
 		)
 
 	def calculate_service_totals(self):
