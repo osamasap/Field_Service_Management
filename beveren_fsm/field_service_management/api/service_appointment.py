@@ -9,6 +9,9 @@ import frappe
 from frappe.utils import getdate
 
 from beveren_fsm.field_service_management.api.geocoding import parse_geolocation_value
+from beveren_fsm.field_service_management.api.schedule_access import (
+	get_allowed_appointment_names,
+)
 
 
 
@@ -99,6 +102,14 @@ def get_appointments(
 		requested_fields = fields
 	else:
 		requested_fields = default_fields
+
+	# Scope: only the appointments this user is allowed to see on /schedule
+	# (manager = all, technician = assigned, area responsible = their area).
+	allowed = get_allowed_appointment_names()
+	if allowed is not None:
+		if not allowed:
+			return []
+		filters["name"] = ["in", allowed]
 
 	appointments = frappe.get_all(
 		"Service Appointment",

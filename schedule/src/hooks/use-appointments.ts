@@ -220,14 +220,13 @@ export async function fetchServiceOrders(): Promise<any[]> {
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const csrfToken = (window as any).csrf_token;
 
+  // Scoped endpoint (not /api/resource): the server returns only the
+  // orders this user is allowed to see on /schedule.
   const params = new URLSearchParams({
-    fields: JSON.stringify(["name", "customer", "status", "priority", "posting_date", "type"]),
-    filters: JSON.stringify([["docstatus", "=", 1]]),
-    order_by: "posting_date desc",
     limit_page_length: "50",
   });
 
-  const url = `/api/resource/Service Order?${params.toString()}`;
+  const url = `/api/method/beveren_fsm.field_service_management.api.service_order.get_service_orders_for_schedule?${params.toString()}`;
 
   const resp = await fetch(url, {
     headers: {
@@ -243,7 +242,7 @@ export async function fetchServiceOrders(): Promise<any[]> {
   }
 
   const json = await resp.json();
-  return json.data || [];
+  return json.message || [];
 }
 
 export async function fetchServiceOrderDetail(name: string): Promise<ServiceOrderDetail> {

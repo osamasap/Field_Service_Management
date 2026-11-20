@@ -1,6 +1,10 @@
 import frappe
 from frappe.utils import cint, getdate
 
+from beveren_fsm.field_service_management.api.schedule_access import (
+	get_allowed_service_order_names,
+)
+
 
 @frappe.whitelist()
 def get_service_orders_for_tracking(
@@ -98,6 +102,14 @@ def _service_orders_for_map(statuses, from_date=None, to_date=None):
 	elif to_date:
 		filters["posting_date"] = ["<=", getdate(to_date)]
 
+	# Scope: only the orders this user is allowed to see on /schedule
+	# (manager = all, technician = assigned, area responsible = their area).
+	allowed = get_allowed_service_order_names()
+	if allowed is not None:
+		if not allowed:
+			return []
+		filters["name"] = ["in", allowed]
+
 	orders = frappe.get_all(
 		"Service Order",
 		filters=filters,
@@ -176,3 +188,27 @@ def get_service_orders_for_map(from_date=None, to_date=None, include_open=1, inc
 	if not statuses:
 		return []
 	return _service_orders_for_map(statuses, from_date, to_date)
+
+
+@frappe.whitelist()
+def get_service_orders_for_schedule(limit_page_length=50):
+	"""Service Orders for the /schedule left panel, scoped to the user.
+
+	Same fields the panel used to fetch via /api/resource, but only the
+	orders the user is allowed to see (manager = all, technician =
+	assigned, area responsible = their area). Orders without a location
+	are included too (unlike the map endpoint).
+	"""
+	filters = {"docstatus": 1}
+	allowed = get_allowed_service_order_names()
+	if allowed is not None:
+		if not allowed:
+			return []
+		filters["name"] = ["in", allowed]
+	return frappe.get_all(
+		"Service Order",
+		filters=filters,
+		fields=["name", "customer", "status", "priority", "posting_date", "type"],
+		order_by="posting_date desc",
+		limit_page_length=cint(limit_page_length) or 50,
+	)

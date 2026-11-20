@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "service_area",
+  "responsible_user",
   "location_link",
   "location"
  ],
@@ -16,6 +17,13 @@
    "fieldtype": "Data",
    "label": "Service Area",
    "unique": 1
+  },
+  {
+   "description": "The user responsible for this area - they see this area's orders on the schedule",
+   "fieldname": "responsible_user",
+   "fieldtype": "Link",
+   "label": "Responsible User",
+   "options": "User"
   },
   {
    "description": "Paste a Google Maps link or lat,lng, then press Enter - the location is set on the map",

@@ -13,6 +13,10 @@ CLOSING_SCRIPT_TAG_PATTERN = re.compile(r"</script\>")
 
 
 def get_context(context):
+	# The schedule page is for logged-in users only: a guest is sent to login.
+	if frappe.session.user == "Guest":
+		frappe.redirect("/login?redirect-to=/schedule")
+
 	csrf_token = frappe.sessions.get_csrf_token()
 	# Manually commit the CSRF token here
 	frappe.db.commit()  # nosemgrep
