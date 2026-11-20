@@ -20,7 +20,7 @@
  "idx": 0,
  "indicator_color": "",
  "is_hidden": 0,
- "label": "Services",
+ "label": "Service",
  "links": [
   {
    "hidden": 0,
@@ -65,7 +65,7 @@
  "modified": "2025-11-06 07:11:50.675544",
  "modified_by": "Administrator",
  "module": "Field Service Management",
- "name": "Services",
+ "name": "Service",
  "number_cards": [
   {
    "label": "Open Requests",
@@ -113,7 +113,7 @@
    "color": "Grey",
    "doc_view": "List",
    "label": "Dashboard",
-   "link_to": "Dashboards",
+   "link_to": "Service",
    "type": "Dashboard"
   },
   {

@@ -28,7 +28,7 @@
   }
  ],
  "creation": "2025-03-13 19:08:25.370204",
- "dashboard_name": "Dashboards",
+ "dashboard_name": "Service",
  "docstatus": 0,
  "doctype": "Dashboard",
  "idx": 0,
@@ -37,6 +37,6 @@
  "modified": "2025-03-13 19:40:24.916458",
  "modified_by": "Administrator",
  "module": "Field Service Management",
- "name": "Dashboards",
+ "name": "Service",
  "owner": "Administrator"
 }
