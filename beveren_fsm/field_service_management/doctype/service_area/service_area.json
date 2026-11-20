@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "service_area",
+  "location_link",
   "location"
  ],
  "fields": [
@@ -15,6 +16,12 @@
    "fieldtype": "Data",
    "label": "Service Area",
    "unique": 1
+  },
+  {
+   "description": "Paste a Google Maps link or lat,lng, then press Enter - the location is set on the map",
+   "fieldname": "location_link",
+   "fieldtype": "Data",
+   "label": "Location link"
   },
   {
    "fieldname": "location",

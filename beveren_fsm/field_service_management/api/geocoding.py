@@ -298,6 +298,14 @@ def parse_location_link(value):
 	except Exception:
 		pass
 
+	# Google Maps search URL: /maps/search/<lat>,<lng> (also /maps/search/<lat>,+<lng>)
+	# This is the form a resolved maps.app.goo.gl short link lands on.
+	match = re.search(r"/search/(-?\d+(?:\.\d+)?),\+?(-?\d+(?:\.\d+)?)", text)
+	if match:
+		coords = _valid_lat_lng(match.group(1), match.group(2))
+		if coords:
+			return coords
+
 	# Short links: resolve the redirect, then parse the final URL
 	if "maps.app.goo.gl" in text or "goo.gl/maps" in text:
 		final_url = _resolve_short_link(text)
@@ -305,3 +313,18 @@ def parse_location_link(value):
 			return parse_location_link(final_url)
 
 	return None
+
+
+@frappe.whitelist()
+def resolve_location_link(value: str):
+	"""Resolve a pasted location link / coordinates to {lat, lng}.
+
+	Whitelisted wrapper around parse_location_link for the Service Area
+	form, so short links (maps.app.goo.gl) can be resolved on Enter
+	without saving. Returns None when the value cannot be understood.
+	"""
+	coords = parse_location_link(value)
+	if not coords:
+		return None
+	lat, lng = coords
+	return {"lat": lat, "lng": lng}
